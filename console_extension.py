@@ -26,6 +26,48 @@ class Colors:
     END = "\033[0m"
 
 
+def create_table_line_break(y: int, row_before: str, row_after: str, max_y: int):
+    if len(row_before) > len(row_after):
+        length = len(row_before) - 1
+        row_after += " " * (len(row_before) - len(row_after))
+    else:
+        length = len(row_after) - 1
+        row_before += " " * (len(row_after) - len(row_before))
+
+    lb = ""
+    for i in range(length):
+        if i == 0 and y == 0:
+            lb += "┌"
+        elif i == len(row_after) - 2 and y == 0:
+            lb += "┐"
+        elif i == len(row_after) - 2 and row_before[i] == " ":
+            lb += "┐"
+        elif i == 0 and y == max_y:
+            lb += "└"
+        elif i == len(row_after) - 2 and y == max_y:
+            lb += "┘"
+        elif i == len(row_after) - 2 and row_after[i] == " ":
+            lb += "┘"
+        elif row_after[i] == "|" and y == 0:
+            lb += "┬"
+        elif row_after[i] == "|" and row_before[i] == " ":
+            lb += "┬"
+        elif row_before[i] == "|" and y == max_y:
+            lb += "┴"
+        elif row_before[i] == "|" and row_after[i] == " ":
+            lb += "┴"
+        elif row_after[i] == "|" and i == 0:
+            lb += "├"
+        elif row_after[i] == "|" and i == len(row_after) - 2:
+            lb += "┤"
+        elif row_after[i] == "|" and row_before[i] == "|":
+            lb += "┼"
+        else:
+            lb += "-"
+
+    return lb
+
+
 class Console:
     default_foreground = Colors.LIGHT_WHITE
     foreground_color = None
@@ -61,17 +103,26 @@ class Console:
         if self.foreground_color is None:
             out += self.default_foreground
 
-        print(out, sep=sep, end=end+'\n')
+        print(out, sep=sep, end=end + '\n')
 
     def print_tabel(self, tabel: list[list[any]]):
         out = ""
+        row_before = ""
 
-        for row in tabel:
-            r = "| "
-            for val in row:
-                r += str(val) + " | "
+        for k in range(len(tabel)):
+            vals = ""
+            vals += "| "
+            for val in tabel[k]:
+                vals += str(val) + " | "
 
-            out += r + "\n"
+            lb = create_table_line_break(k, row_before, vals, len(tabel))
+
+            out += lb + "\n" + vals + "\n"
+            row_before = vals
+
+        lb = create_table_line_break(len(tabel), row_before, "", len(tabel))
+
+        out += lb
 
         print(out)
 
